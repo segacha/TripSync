@@ -15,14 +15,14 @@ import { AuthService } from '../../core/services/auth.service';
       <div style="flex:1; background:linear-gradient(135deg,#f97316 0%,#ea580c 100%); display:flex; align-items:center; justify-content:center; padding:48px; min-height:100vh;">
         <div style="max-width:380px; width:100%;">
           <!-- Logo -->
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:36px;">
+          <a routerLink="/" style="display:flex; align-items:center; gap:12px; margin-bottom:36px; text-decoration:none;">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
               <circle cx="18" cy="18" r="18" fill="rgba(255,255,255,0.2)"/>
               <path d="M18 8 L26 14 L26 22 C26 25 23 28 18 30 C13 28 10 25 10 22 L10 14 Z" fill="white" opacity="0.9"/>
               <circle cx="18" cy="19" r="4" fill="#f97316"/>
             </svg>
             <span style="font-size:24px; font-weight:700; color:white; letter-spacing:-0.3px;">TripSync</span>
-          </div>
+          </a>
           <!-- Slogan -->
           <h1 style="font-size:32px; font-weight:700; color:white; line-height:1.2; margin-bottom:36px; letter-spacing:-0.5px;">
             Planifica viajes, a tu manera.
