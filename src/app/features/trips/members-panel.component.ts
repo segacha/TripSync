@@ -23,6 +23,7 @@ import {
   TripMemberRole,
   UserProfile,
 } from '../../core/models/trip.model';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MembersService } from '../../core/services/members.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -42,11 +43,11 @@ import { SupabaseService } from '../../core/services/supabase.service';
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        Miembros
+        {{ t('members.title') }}
       </h3>
 
       @if (loading()) {
-        <p style="font-size:14px; color:#94a3b8;">Cargando...</p>
+        <p style="font-size:14px; color:#94a3b8;">{{ t('common.loading') }}</p>
       } @else {
 
         <!-- Member list -->
@@ -67,7 +68,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
                   {{ member.email }}
                 </span>
                 @if (member.user_id === currentUserId()) {
-                  <span style="font-size:11px; color:#f97316; font-weight:600; background:#fff7ed; padding:1px 6px; border-radius:50px; flex-shrink:0;">(tú)</span>
+                  <span style="font-size:11px; color:#f97316; font-weight:600; background:#fff7ed; padding:1px 6px; border-radius:50px; flex-shrink:0;">{{ t('members.you') }}</span>
                 }
               </div>
               <!-- Role / controls -->
@@ -77,15 +78,15 @@ import { SupabaseService } from '../../core/services/supabase.service';
                   (change)="changeRole(member, $any($event.target).value)"
                   style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:3px 6px; color:#374151; background:white; cursor:pointer; font-family:'Outfit',sans-serif;"
                 >
-                  <option value="viewer">Viewer</option>
-                  <option value="editor">Editor</option>
+                  <option value="viewer">{{ t('members.role.viewer') }}</option>
+                  <option value="editor">{{ t('members.role.editor') }}</option>
                 </select>
                 <button
                   type="button"
                   (click)="removeMember(member)"
                   style="background:none; border:none; cursor:pointer; color:#cbd5e1; font-size:18px; line-height:1; padding:2px 4px; border-radius:4px; transition:color 0.15s;"
                   onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='#cbd5e1'"
-                  aria-label="Quitar miembro"
+                  [attr.aria-label]="t('members.remove')"
                 >×</button>
               } @else {
                 <span [style.background]="roleBg(member.role)" [style.color]="roleColor(member.role)"
@@ -101,7 +102,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
         @if (canManage() && pending().length > 0) {
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
             <p style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 10px;">
-              Invitaciones pendientes
+              {{ t('members.pendingTitle') }}
             </p>
             <div style="display:flex; flex-direction:column; gap:8px;">
               @for (inv of pending(); track inv.id) {
@@ -111,13 +112,13 @@ import { SupabaseService } from '../../core/services/supabase.service';
                   </div>
                   <div style="flex:1; display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
                     <span style="font-size:13px; color:#374151; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ inv.email }}</span>
-                    <span style="font-size:11px; color:#d97706; font-weight:500; background:#fef9c3; padding:1px 6px; border-radius:50px; flex-shrink:0;">Pendiente</span>
+                    <span style="font-size:11px; color:#d97706; font-weight:500; background:#fef9c3; padding:1px 6px; border-radius:50px; flex-shrink:0;">{{ t('members.pendingBadge') }}</span>
                   </div>
                   <button
                     type="button"
                     (click)="cancelInvitation(inv)"
                     style="font-size:12px; color:#ef4444; background:none; border:1px solid #fecaca; border-radius:6px; padding:3px 8px; cursor:pointer; font-family:'Outfit',sans-serif; flex-shrink:0;"
-                  >Cancelar</button>
+                  >{{ t('common.cancel') }}</button>
                 </div>
               }
             </div>
@@ -128,7 +129,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
         @if (canManage()) {
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
             <p style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 10px;">
-              Invitar alguien
+              {{ t('members.inviteTitle') }}
             </p>
 
             @if (notice()) {
@@ -146,7 +147,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
               <input
                 type="email"
                 formControlName="email"
-                placeholder="email@ejemplo.com"
+                [placeholder]="t('members.invitePlaceholder')"
                 class="members-input"
                 style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:13px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white; box-sizing:border-box;"
               />
@@ -155,8 +156,8 @@ import { SupabaseService } from '../../core/services/supabase.service';
                   formControlName="role"
                   style="flex:1; font-size:13px; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 10px; color:#374151; background:white; cursor:pointer; font-family:'Outfit',sans-serif;"
                 >
-                  <option value="viewer">Viewer</option>
-                  <option value="editor">Editor</option>
+                  <option value="viewer">{{ t('members.role.viewer') }}</option>
+                  <option value="editor">{{ t('members.role.editor') }}</option>
                 </select>
                 <button
                   type="submit"
@@ -165,7 +166,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
                   [style.background]="inviteForm.invalid || inviting() ? '#fdba74' : '#f97316'"
                   onmouseenter="if(!this.disabled) this.style.background='#ea580c'" onmouseleave="if(!this.disabled) this.style.background='#f97316'"
                 >
-                  {{ inviting() ? 'Invitando...' : 'Invitar' }}
+                  {{ inviting() ? t('members.inviting') : t('members.invite') }}
                 </button>
               </div>
             </form>
@@ -187,11 +188,13 @@ export class MembersPanelComponent {
   private readonly membersService = inject(MembersService);
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(FormBuilder);
   private readonly supabase = inject(SupabaseService).client;
   private readonly destroyRef = inject(DestroyRef);
   private channel: RealtimeChannel | null = null;
 
+  protected readonly t = this.i18n.t;
   protected readonly members = signal<TripMember[]>([]);
   protected readonly pending = signal<TripInvitation[]>([]);
   protected readonly profiles = signal<Map<string, UserProfile>>(new Map());
@@ -208,7 +211,9 @@ export class MembersPanelComponent {
   }
 
   protected roleLabel(role: string): string {
-    return role === 'owner' ? 'Dueño' : role === 'editor' ? 'Editor' : 'Viewer';
+    if (role === 'owner') return this.t('members.role.owner');
+    if (role === 'editor') return this.t('members.role.editor');
+    return this.t('members.role.viewer');
   }
 
   protected roleBg(role: string): string {
@@ -304,14 +309,19 @@ export class MembersPanelComponent {
       const { email, role } = this.inviteForm.getRawValue();
       const result = await this.membersService.invite(this.trip().id, email, role);
       if (result.status === 'added') {
-        this.notice.set(`${result.email} ya tenía cuenta — añadido como ${result.role}.`);
+        this.notice.set(
+          this.t('members.addedNotice', {
+            email: result.email,
+            role: this.roleLabel(result.role),
+          }),
+        );
       } else {
-        this.notice.set(`Invitación pendiente enviada a ${result.email}.`);
+        this.notice.set(this.t('members.invitedNotice', { email: result.email }));
       }
       this.inviteForm.reset({ email: '', role: 'viewer' });
       await this.refresh();
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.inviting.set(false);
     }
@@ -330,29 +340,29 @@ export class MembersPanelComponent {
         list.map((m) => (m.user_id === member.user_id ? updated : m)),
       );
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
   protected async removeMember(member: TripMember) {
-    if (!confirm(`¿Quitar a ${member.email} del viaje?`)) return;
+    if (!confirm(this.t('members.removeConfirm', { email: member.email }))) return;
     this.errorMessage.set(null);
     try {
       await this.membersService.removeMember(member.trip_id, member.user_id);
       this.members.update((list) => list.filter((m) => m.user_id !== member.user_id));
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
   protected async cancelInvitation(inv: TripInvitation) {
-    if (!confirm(`¿Cancelar invitación a ${inv.email}?`)) return;
+    if (!confirm(this.t('members.cancelInviteConfirm', { email: inv.email }))) return;
     this.errorMessage.set(null);
     try {
       await this.membersService.cancelInvitation(inv.id);
       this.pending.update((list) => list.filter((i) => i.id !== inv.id));
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
@@ -376,7 +386,7 @@ export class MembersPanelComponent {
         this.profiles.set(map);
       }
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.loading.set(false);
     }

@@ -10,7 +10,8 @@ import {
   viewChild,
 } from '@angular/core';
 import * as L from 'leaflet';
-import { Activity, ItineraryDay } from '../../core/models/trip.model';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { Activity } from '../../core/models/trip.model';
 import { ItineraryStore } from './itinerary.store';
 
 interface PinPoint {
@@ -36,11 +37,11 @@ export const DAY_COLORS = [
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
           </svg>
-          Mapa del viaje
+          {{ t('map.title') }}
         </h3>
         @if (pinCount() === 0) {
           <span style="font-size:12px; color:#94a3b8; font-family:'Outfit',sans-serif;">
-            Añadí actividades con ubicación para verlas aquí
+            {{ t('map.emptyHint') }}
           </span>
         }
       </div>
@@ -56,7 +57,9 @@ export const DAY_COLORS = [
               <span [style.background]="getDayColor(i)"
                 style="width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block;">
               </span>
-              <span style="font-size:12px; color:#64748b; font-family:'Outfit',sans-serif;">Día {{ i + 1 }}</span>
+              <span style="font-size:12px; color:#64748b; font-family:'Outfit',sans-serif;">
+                {{ t('map.dayShort', { number: i + 1 }) }}
+              </span>
             </div>
           }
         </div>
@@ -66,7 +69,10 @@ export const DAY_COLORS = [
 })
 export class TripMapComponent implements AfterViewInit {
   protected readonly store = inject(ItineraryStore);
+  private readonly i18n = inject(I18nService);
   private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly t = this.i18n.t;
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
 
   private map: L.Map | null = null;
@@ -98,6 +104,8 @@ export class TripMapComponent implements AfterViewInit {
   constructor() {
     effect(() => {
       this.points();
+      // Los popups llevan texto traducido: se redibujan al cambiar de idioma.
+      this.i18n.lang();
       if (this.map) this.renderPins();
     });
     this.destroyRef.onDestroy(() => this.disposeMap());
@@ -165,13 +173,18 @@ export class TripMapComponent implements AfterViewInit {
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const title = escape(p.activity.title);
     const location = p.activity.location ? escape(p.activity.location) : '';
-    const date = new Date(p.dayDate + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+    const date = new Date(p.dayDate + 'T12:00:00').toLocaleDateString(this.i18n.dateLocale(), {
+      day: 'numeric',
+      month: 'long',
+    });
     return `
       <div style="font-family:'Outfit',sans-serif; min-width:160px; padding:4px 2px;">
         <strong style="font-size:14px; color:#0f172a;">${title}</strong>
         <div style="margin-top:6px; display:flex; align-items:center; gap:4px;">
           <span style="width:10px; height:10px; border-radius:50%; background:${color}; display:inline-block; flex-shrink:0;"></span>
-          <span style="font-size:12px; color:#64748b;">Día ${p.dayNumber} — ${date}</span>
+          <span style="font-size:12px; color:#64748b;">${this.i18n.t('map.dayShort', {
+            number: p.dayNumber,
+          })} — ${date}</span>
         </div>
         ${location ? `<div style="font-size:12px; color:#94a3b8; margin-top:3px;">📍 ${location}</div>` : ''}
       </div>

@@ -6,6 +6,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { I18nService } from '../core/i18n/i18n.service';
 import {
   PlaceSearchService,
   PlaceSuggestion,
@@ -20,7 +21,7 @@ import {
       <input
         type="text"
         [value]="value()"
-        [placeholder]="placeholder()"
+        [placeholder]="placeholder() || t('place.placeholder')"
         (input)="onInput($any($event.target).value)"
         (focus)="setOpen(true)"
         (blur)="onBlur()"
@@ -32,7 +33,7 @@ import {
           (mousedown)="$event.preventDefault()"
         >
           @if (loading()) {
-            <li class="px-3 py-2 text-xs text-slate-400">Buscando...</li>
+            <li class="px-3 py-2 text-xs text-slate-400">{{ t('place.searching') }}</li>
           }
           @if (errorMessage()) {
             <li class="px-3 py-2 text-xs text-red-600">{{ errorMessage() }}</li>
@@ -55,12 +56,16 @@ import {
 })
 export class PlaceSearchInputComponent {
   readonly initialValue = input<string>('');
-  readonly placeholder = input<string>('Buscar lugar');
+  /** Vacío = usa el placeholder traducido por defecto. */
+  readonly placeholder = input<string>('');
 
   readonly valueChange = output<string>();
   readonly placeSelected = output<PlaceSuggestion>();
 
   private readonly placeSearch = inject(PlaceSearchService);
+  private readonly i18n = inject(I18nService);
+
+  protected readonly t = this.i18n.t;
 
   protected readonly value = signal<string>('');
   protected readonly suggestions = signal<PlaceSuggestion[]>([]);
@@ -136,7 +141,7 @@ export class PlaceSearchInputComponent {
       this.open.set(true);
     } catch (err) {
       if (seq !== this.requestSeq) return;
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error de búsqueda');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('place.error'));
     } finally {
       if (seq === this.requestSeq) this.loading.set(false);
     }

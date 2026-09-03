@@ -16,6 +16,7 @@ import {
   TripMember,
   TripUpdate,
 } from '../../core/models/trip.model';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { ItineraryService } from '../../core/services/itinerary.service';
 import { MembersService } from '../../core/services/members.service';
 import { SupabaseService } from '../../core/services/supabase.service';
@@ -23,6 +24,7 @@ import { TripsService } from '../../core/services/trips.service';
 
 @Injectable()
 export class ItineraryStore {
+  private readonly i18n = inject(I18nService);
   private readonly itinerary = inject(ItineraryService);
   private readonly tripsService = inject(TripsService);
   private readonly membersService = inject(MembersService);
@@ -70,7 +72,7 @@ export class ItineraryStore {
       this._activities.set(map);
       this.subscribe(tripId);
     } catch (e) {
-      this._error.set(e instanceof Error ? e.message : 'Error desconocido');
+      this._error.set(e instanceof Error ? e.message : this.i18n.t('common.unknownError'));
     } finally {
       this._loading.set(false);
     }

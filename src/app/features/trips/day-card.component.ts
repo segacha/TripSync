@@ -15,6 +15,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { Activity, ItineraryDay, PriceDistributionType } from '../../core/models/trip.model';
 import { PlaceSuggestion } from '../../core/services/place-search.service';
 import { PlaceSearchInputComponent } from '../../shared/place-search-input.component';
@@ -55,17 +56,20 @@ interface ActivityEdit {
         </div>
         <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
           <span style="font-size:15px; font-weight:600; color:#0f172a; text-transform:capitalize;">
-            {{ day().day_date | date: 'fullDate' }}
+            {{ day().day_date | date: 'fullDate' : undefined : dateLocale() }}
           </span>
           <span style="font-size:13px; color:#94a3b8;">
-            @if (activities().length === 0) { Sin actividades }
-            @else { {{ activities().length }} actividad{{ activities().length === 1 ? '' : 'es' }} }
+            @if (activities().length === 0) {
+              {{ t('day.noActivities') }}
+            } @else {
+              {{ tp('common.activities', activities().length) }}
+            }
           </span>
         </div>
         <button
           type="button"
           (click)="confirmDeleteDay()"
-          aria-label="Eliminar día"
+          [attr.aria-label]="t('day.deleteDay')"
           style="padding:6px; border:1px solid transparent; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s;"
           onmouseenter="this.style.background='#fef2f2'; this.style.color='#ef4444'; this.style.borderColor='#fecaca';"
           onmouseleave="this.style.background='transparent'; this.style.color='#cbd5e1'; this.style.borderColor='transparent';"
@@ -87,7 +91,7 @@ interface ActivityEdit {
       >
         @if (activities().length === 0) {
           <div style="text-align:center; padding:16px; color:#cbd5e1; font-size:14px; font-family:'Outfit',sans-serif;">
-            Sin actividades aún
+            {{ t('day.noActivitiesYet') }}
           </div>
         } @else {
           @for (activity of activities(); track activity.id) {
@@ -101,14 +105,14 @@ interface ActivityEdit {
                     type="text"
                     [value]="editDraft().title"
                     (input)="updateDraft('title', $any($event.target).value)"
-                    placeholder="Título de la actividad"
+                    [placeholder]="t('day.activityTitle')"
                     class="trip-input"
                     style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:15px; font-weight:600; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
                     autofocus
                   />
                   <app-place-search-input
                     [initialValue]="editDraft().location"
-                    placeholder="Ubicación (opcional)"
+                    [placeholder]="t('day.location')"
                     (valueChange)="onEditLocationText($event)"
                     (placeSelected)="onEditPlaceSelected($event)"
                   />
@@ -116,7 +120,7 @@ interface ActivityEdit {
                     rows="2"
                     [value]="editDraft().description"
                     (input)="updateDraft('description', $any($event.target).value)"
-                    placeholder="Descripción breve (opcional)"
+                    [placeholder]="t('day.descriptionShort')"
                     class="trip-input"
                     style="padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white; width:100%; box-sizing:border-box; resize:none;"
                   ></textarea>
@@ -124,7 +128,7 @@ interface ActivityEdit {
                     type="url"
                     [value]="editDraft().link"
                     (input)="updateDraft('link', $any($event.target).value)"
-                    placeholder="Enlace externo (opcional, https://...)"
+                    [placeholder]="t('day.link')"
                     class="trip-input"
                     style="padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
                   />
@@ -134,7 +138,7 @@ interface ActivityEdit {
                       type="number"
                       [value]="editDraft().price ?? ''"
                       (input)="updateDraftPrice($any($event.target).value)"
-                      placeholder="Precio (opcional, ej: 25.50)"
+                      [placeholder]="t('day.price')"
                       class="trip-input"
                       step="0.01"
                       min="0"
@@ -147,10 +151,10 @@ interface ActivityEdit {
                         (change)="updateDraftDistribution($any($event.target).value)"
                         style="padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
                       >
-                        <option value="">Selecciona cómo repartir el precio</option>
-                        <option value="equal">Partes iguales entre todos</option>
-                        <option value="assigned">Asignado a miembros específicos</option>
-                        <option value="per_person">Cada persona paga el precio completo</option>
+                        <option value="">{{ t('day.distribution.placeholder') }}</option>
+                        <option value="equal">{{ t('day.distribution.equal') }}</option>
+                        <option value="assigned">{{ t('day.distribution.assigned') }}</option>
+                        <option value="per_person">{{ t('day.distribution.perPerson') }}</option>
                       </select>
                     }
                   </div>
@@ -161,12 +165,12 @@ interface ActivityEdit {
                       [disabled]="!editDraft().title.trim() || saving()"
                       style="padding:8px 16px; background:#f97316; color:white; border:none; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; transition:background 0.15s;"
                       onmouseenter="this.style.background='#ea580c'" onmouseleave="this.style.background='#f97316'"
-                    >Guardar</button>
+                    >{{ t('common.save') }}</button>
                     <button
                       type="button"
                       (click)="cancelEdit()"
                       style="padding:8px 16px; background:transparent; color:#64748b; border:1px solid #e2e8f0; border-radius:50px; font-size:14px; cursor:pointer; font-family:'Outfit',sans-serif;"
-                    >Cancelar</button>
+                    >{{ t('common.cancel') }}</button>
                   </div>
                 </div>
               } @else {
@@ -210,7 +214,7 @@ interface ActivityEdit {
                       @if (activity.link) {
                         <a [href]="activity.link" target="_blank" rel="noopener noreferrer"
                           (click)="$event.stopPropagation()"
-                          title="Abrir enlace externo"
+                          [title]="t('day.openLink')"
                           style="color:#3b82f6; display:flex; align-items:center; flex-shrink:0; text-decoration:none;">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -228,7 +232,7 @@ interface ActivityEdit {
                         @if (mapsLink(activity)) {
                           <a [href]="mapsLink(activity)" target="_blank" rel="noopener noreferrer"
                             (click)="$event.stopPropagation()"
-                            title="Ver en Google Maps"
+                            [title]="t('day.viewOnMaps')"
                             style="color:#3b82f6; display:flex; align-items:center; margin-left:2px; text-decoration:none;">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -250,7 +254,7 @@ interface ActivityEdit {
                       type="button"
                       (click)="startEdit(activity)"
                       style="padding:6px; background:#eff6ff; border:none; border-radius:6px; color:#3b82f6; cursor:pointer; display:flex; align-items:center; justify-content:center;"
-                      title="Editar"
+                      [title]="t('common.edit')"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -261,7 +265,7 @@ interface ActivityEdit {
                       type="button"
                       (click)="deleteActivity(activity)"
                       style="padding:6px; background:#fef2f2; border:none; border-radius:6px; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;"
-                      title="Eliminar"
+                      [title]="t('common.delete')"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -283,7 +287,7 @@ interface ActivityEdit {
           <input
             type="text"
             formControlName="title"
-            placeholder="+ Nueva actividad..."
+            [placeholder]="t('day.newActivity')"
             class="trip-input"
             style="flex:1; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
           />
@@ -295,7 +299,7 @@ interface ActivityEdit {
             [style.cursor]="addForm.invalid || saving() ? 'not-allowed' : 'pointer'"
             onmouseenter="if(!this.disabled) this.style.background='#ea580c'" onmouseleave="if(!this.disabled) this.style.background='#f97316'"
           >
-            {{ saving() ? '...' : 'Añadir' }}
+            {{ saving() ? '...' : t('common.add') }}
           </button>
         </div>
 
@@ -305,21 +309,21 @@ interface ActivityEdit {
             (click)="toggleExtraFields()"
             style="background:none; border:none; color:#f97316; font-size:13px; cursor:pointer; font-weight:500; padding:0; font-family:'Outfit',sans-serif; text-align:left;"
           >
-            + Más detalles
+            {{ t('day.moreDetails') }}
           </button>
         }
 
         @if (showExtraFields()) {
           <app-place-search-input
             [initialValue]="addLocation()"
-            placeholder="Ubicación (opcional)"
+            [placeholder]="t('day.location')"
             (valueChange)="onAddLocationText($event)"
             (placeSelected)="onAddPlaceSelected($event)"
           />
           <textarea
             formControlName="description"
             rows="2"
-            placeholder="Descripción (opcional)"
+            [placeholder]="t('day.description')"
             class="trip-input"
             style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white; resize:none;"
           ></textarea>
@@ -327,7 +331,7 @@ interface ActivityEdit {
             type="url"
             [value]="addLink()"
             (input)="addLink.set($any($event.target).value)"
-            placeholder="Enlace externo (opcional, https://...)"
+            [placeholder]="t('day.link')"
             class="trip-input"
             style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
           />
@@ -337,7 +341,7 @@ interface ActivityEdit {
               type="number"
               [value]="addPrice() ?? ''"
               (input)="addPrice.set(parsePrice($any($event.target).value))"
-              placeholder="Precio (opcional, ej: 25.50)"
+              [placeholder]="t('day.price')"
               class="trip-input"
               step="0.01"
               min="0"
@@ -349,10 +353,10 @@ interface ActivityEdit {
                 (change)="updateDraftDistribution($any($event.target).value)"
                 style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
               >
-                <option value="">Selecciona cómo repartir el precio</option>
-                <option value="equal">Partes iguales entre todos</option>
-                <option value="assigned">Asignado a miembros específicos</option>
-                <option value="per_person">Cada persona paga el precio completo</option>
+                <option value="">{{ t('day.distribution.placeholder') }}</option>
+                <option value="equal">{{ t('day.distribution.equal') }}</option>
+                <option value="assigned">{{ t('day.distribution.assigned') }}</option>
+                <option value="per_person">{{ t('day.distribution.perPerson') }}</option>
               </select>
             }
           </div>
@@ -361,7 +365,7 @@ interface ActivityEdit {
             (click)="toggleExtraFields()"
             style="background:none; border:none; color:#f97316; font-size:13px; cursor:pointer; font-weight:500; padding:0; font-family:'Outfit',sans-serif; text-align:left;"
           >
-            − Menos detalles
+            {{ t('day.lessDetails') }}
           </button>
         }
       </form>
@@ -387,7 +391,12 @@ export class DayCardComponent {
   readonly dayDeleted = output<string>();
 
   private readonly store = inject(ItineraryStore);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(FormBuilder);
+
+  protected readonly t = this.i18n.t;
+  protected readonly tp = this.i18n.tp;
+  protected readonly dateLocale = this.i18n.dateLocale;
 
   protected readonly activities = computed(
     () => this.store.activitiesByDay().get(this.day().id) ?? [],
@@ -456,7 +465,7 @@ export class DayCardComponent {
         event.currentIndex,
       );
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
@@ -514,7 +523,7 @@ export class DayCardComponent {
       this.addPriceDistribution.set(null);
       this.addPriceAssignedMembers.set([]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.saving.set(false);
     }
@@ -579,7 +588,7 @@ export class DayCardComponent {
       });
       this.editingId.set(null);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.saving.set(false);
     }
@@ -590,27 +599,27 @@ export class DayCardComponent {
     try {
       await this.store.toggleCompleted(activity);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
   protected async deleteActivity(activity: Activity) {
-    if (!confirm(`¿Eliminar "${activity.title}"?`)) return;
+    if (!confirm(this.t('day.deleteActivityConfirm', { title: activity.title }))) return;
     this.errorMessage.set(null);
     try {
       await this.store.removeActivity(activity.id, this.day().id);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 
   protected async confirmDeleteDay() {
-    if (!confirm('Eliminar este día borrará todas sus actividades. ¿Continuar?')) return;
+    if (!confirm(this.t('day.deleteDayConfirm'))) return;
     try {
       await this.store.removeDay(this.day().id);
       this.dayDeleted.emit(this.day().id);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     }
   }
 }

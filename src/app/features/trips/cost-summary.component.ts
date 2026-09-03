@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { CostCalculatorService, MemberCost } from '../../core/services/cost-calculator.service';
 import { Activity, TripMember } from '../../core/models/trip.model';
 
@@ -15,15 +16,15 @@ import { Activity, TripMember } from '../../core/models/trip.model';
         </div>
         <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
           <span style="font-size:15px; font-weight:600; color:#0f172a; text-transform:capitalize;">
-            Costos del Viaje
+            {{ t('cost.title') }}
           </span>
           <span style="font-size:13px; color:#94a3b8;">
             @if (memberCosts().length === 0) {
-              Sin costos registrados
+              {{ t('cost.none') }}
             } @else if (currentMemberCost() !== null) {
-              Tu total: €{{ currentMemberCost()!.toFixed(2) }}
+              {{ t('cost.yourTotal', { amount: currentMemberCost()!.toFixed(2) }) }}
             } @else {
-              No hay costo asignado para ti
+              {{ t('cost.noneForYou') }}
             }
           </span>
         </div>
@@ -33,7 +34,7 @@ import { Activity, TripMember } from '../../core/models/trip.model';
       <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
         @if (memberCosts().length === 0) {
           <div style="text-align:center; padding:20px; color:#cbd5e1; font-size:14px; font-family:'Outfit',sans-serif;">
-            No hay costos registrados en este viaje aún.
+            {{ t('cost.emptyState') }}
           </div>
         } @else {
           @for (member of memberCosts(); track member.userId) {
@@ -49,7 +50,7 @@ import { Activity, TripMember } from '../../core/models/trip.model';
                       {{ member.email }}
                     </span>
                     <span style="font-size:12px; color:#94a3b8; font-family:'Outfit',sans-serif;">
-                      {{ member.breakdown.length }} actividad{{ member.breakdown.length === 1 ? '' : 'es' }}
+                      {{ tp('common.activities', member.breakdown.length) }}
                     </span>
                   </div>
                 </div>
@@ -64,7 +65,7 @@ import { Activity, TripMember } from '../../core/models/trip.model';
               @if (member.breakdown.length > 0) {
                 <details style="display:flex; flex-direction:column; gap:6px;">
                   <summary style="cursor:pointer; color:#64748b; font-size:12px; font-weight:500; font-family:'Outfit',sans-serif; list-style:none; padding:0; margin:0;">
-                    <span style="display:inline-block;">▶ Desglose</span>
+                    <span style="display:inline-block;">▶ {{ t('cost.breakdown') }}</span>
                   </summary>
                   <div style="padding:8px; background:white; border-radius:8px; border:1px solid #e2e8f0; display:flex; flex-direction:column; gap:6px;">
                     @for (activity of member.breakdown; track activity.activityId) {
@@ -75,9 +76,9 @@ import { Activity, TripMember } from '../../core/models/trip.model';
                           </span>
                           <span style="color:#94a3b8; font-size:12px; font-family:'Outfit',sans-serif;">
                             @if (activity.totalPrice === activity.costPerPerson) {
-                              Precio completo
+                              {{ t('cost.fullPrice') }}
                             } @else {
-                              €{{ activity.totalPrice.toFixed(2) }} ÷ personas
+                              {{ t('cost.dividedBy', { amount: activity.totalPrice.toFixed(2) }) }}
                             }
                           </span>
                         </div>
@@ -95,12 +96,12 @@ import { Activity, TripMember } from '../../core/models/trip.model';
           <!-- Summary stats -->
                 <div style="border-top:1px solid #e2e8f0; padding-top:12px; display:grid; grid-template-columns:1fr; gap:12px;">
             <div style="background:linear-gradient(135deg, #f97316, #fb923c); border-radius:12px; padding:12px; color:white;">
-              <div style="font-size:12px; opacity:0.9; font-weight:500; font-family:'Outfit',sans-serif;">Total para mí</div>
+              <div style="font-size:12px; opacity:0.9; font-weight:500; font-family:'Outfit',sans-serif;">{{ t('cost.totalForMe') }}</div>
               <div style="font-size:18px; font-weight:700; margin-top:4px; font-family:'Outfit',sans-serif;">
                 @if (currentMemberCost() !== null) {
                   €{{ currentMemberCost()!.toFixed(2) }}
                 } @else {
-                  Sin costo asignado
+                  {{ t('cost.noCostAssigned') }}
                 }
               </div>
             </div>
@@ -116,6 +117,10 @@ export class CostSummaryComponent {
   readonly currentUserId = input<string>('');
 
   private readonly costCalculator = inject(CostCalculatorService);
+  private readonly i18n = inject(I18nService);
+
+  protected readonly t = this.i18n.t;
+  protected readonly tp = this.i18n.tp;
 
   protected readonly memberCosts = computed(() => {
     return this.costCalculator.calculateCostsByMember(

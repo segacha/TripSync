@@ -1,23 +1,26 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TranslationKey } from '../../core/i18n/translations';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageSwitchComponent } from '../../shared/language-switch.component';
 
 interface Feature {
   icon: string;
-  title: string;
-  text: string;
+  titleKey: TranslationKey;
+  textKey: TranslationKey;
 }
 
 interface Step {
   number: string;
-  title: string;
-  text: string;
+  titleKey: TranslationKey;
+  textKey: TranslationKey;
 }
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LanguageSwitchComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="landing">
@@ -35,16 +38,17 @@ interface Step {
           </a>
 
           <nav class="nav-links">
-            <a href="#features" class="nav-link">Funciones</a>
-            <a href="#como-funciona" class="nav-link">Cómo funciona</a>
+            <a href="#features" class="nav-link">{{ t('nav.features') }}</a>
+            <a href="#como-funciona" class="nav-link">{{ t('nav.howItWorks') }}</a>
           </nav>
 
           <div class="nav-actions">
+            <app-language-switch />
             @if (isAuthenticated()) {
-              <a routerLink="/trips" class="btn btn-primary btn-sm">Ir a mis viajes</a>
+              <a routerLink="/trips" class="btn btn-primary btn-sm">{{ t('nav.goToTrips') }}</a>
             } @else {
-              <a routerLink="/login" class="nav-link">Iniciar sesión</a>
-              <a routerLink="/register" class="btn btn-primary btn-sm">Crear cuenta</a>
+              <a routerLink="/login" class="nav-link">{{ t('nav.login') }}</a>
+              <a routerLink="/register" class="btn btn-primary btn-sm">{{ t('nav.register') }}</a>
             }
           </div>
         </div>
@@ -57,30 +61,26 @@ interface Step {
           <div class="hero-copy">
             <span class="badge">
               <span class="badge-dot"></span>
-              Planificación colaborativa en tiempo real
+              {{ t('landing.hero.badge') }}
             </span>
 
             <h1 class="hero-title">
-              Planificá viajes en grupo<br />
-              <span class="accent">sin perder el hilo.</span>
+              {{ t('landing.hero.titleLine1') }}<br />
+              <span class="accent">{{ t('landing.hero.titleLine2') }}</span>
             </h1>
 
-            <p class="hero-sub">
-              Armá el itinerario día por día, ubicá cada actividad en el mapa, invitá a tus
-              compañeros de viaje y dividí los gastos automáticamente. Todo en un solo lugar,
-              sincronizado al instante para todo el grupo.
-            </p>
+            <p class="hero-sub">{{ t('landing.hero.sub') }}</p>
 
             <div class="hero-cta">
               @if (isAuthenticated()) {
-                <a routerLink="/trips" class="btn btn-primary btn-lg">Ir a mis viajes</a>
+                <a routerLink="/trips" class="btn btn-primary btn-lg">{{ t('nav.goToTrips') }}</a>
               } @else {
-                <a routerLink="/register" class="btn btn-primary btn-lg">Empezar gratis</a>
-                <a routerLink="/login" class="btn btn-ghost btn-lg">Ya tengo cuenta</a>
+                <a routerLink="/register" class="btn btn-primary btn-lg">{{ t('landing.hero.ctaStart') }}</a>
+                <a routerLink="/login" class="btn btn-ghost btn-lg">{{ t('landing.hero.ctaHaveAccount') }}</a>
               }
             </div>
 
-            <p class="hero-note">Gratis · Sin tarjeta de crédito</p>
+            <p class="hero-note">{{ t('landing.hero.note') }}</p>
           </div>
 
           <!-- Mockup -->
@@ -90,17 +90,17 @@ interface Step {
                 <span class="dot dot-r"></span>
                 <span class="dot dot-y"></span>
                 <span class="dot dot-g"></span>
-                <span class="mock-title">Europa 2026</span>
+                <span class="mock-title">{{ t('landing.mock.tripTitle') }}</span>
               </div>
 
               <div class="mock-body">
-                <div class="mock-day">Día 3 · Roma</div>
+                <div class="mock-day">{{ t('landing.mock.day') }}</div>
 
                 <div class="mock-item">
                   <span class="mock-check done">✓</span>
                   <div class="mock-item-body">
-                    <span class="mock-item-title">Coliseo Romano</span>
-                    <span class="mock-item-meta">📍 Piazza del Colosseo</span>
+                    <span class="mock-item-title">{{ t('landing.mock.item1') }}</span>
+                    <span class="mock-item-meta">📍 {{ t('landing.mock.item1Meta') }}</span>
                   </div>
                   <span class="mock-price">€18</span>
                 </div>
@@ -108,8 +108,8 @@ interface Step {
                 <div class="mock-item">
                   <span class="mock-check"></span>
                   <div class="mock-item-body">
-                    <span class="mock-item-title">Trastevere</span>
-                    <span class="mock-item-meta">📍 Cena en grupo</span>
+                    <span class="mock-item-title">{{ t('landing.mock.item2') }}</span>
+                    <span class="mock-item-meta">📍 {{ t('landing.mock.item2Meta') }}</span>
                   </div>
                   <span class="mock-price">€45</span>
                 </div>
@@ -117,8 +117,8 @@ interface Step {
                 <div class="mock-item ghost">
                   <span class="mock-check"></span>
                   <div class="mock-item-body">
-                    <span class="mock-item-title">Fontana di Trevi</span>
-                    <span class="mock-item-meta">Arrastrá para reordenar</span>
+                    <span class="mock-item-title">{{ t('landing.mock.item3') }}</span>
+                    <span class="mock-item-meta">{{ t('landing.mock.item3Meta') }}</span>
                   </div>
                 </div>
 
@@ -129,7 +129,7 @@ interface Step {
                     <span class="av av-3">L</span>
                     <span class="av av-more">+2</span>
                   </div>
-                  <span class="mock-split">€21 c/u</span>
+                  <span class="mock-split">{{ t('landing.mock.split') }}</span>
                 </div>
               </div>
             </div>
@@ -137,16 +137,16 @@ interface Step {
             <div class="float-card float-card-map float-soft">
               <span class="fc-icon">🗺️</span>
               <div>
-                <div class="fc-title">3 lugares</div>
-                <div class="fc-sub">en el mapa</div>
+                <div class="fc-title">{{ t('landing.mock.placesTitle') }}</div>
+                <div class="fc-sub">{{ t('landing.mock.placesSub') }}</div>
               </div>
             </div>
 
             <div class="float-card float-card-live">
               <span class="live-dot"></span>
               <div>
-                <div class="fc-title">Julia editando</div>
-                <div class="fc-sub">en vivo</div>
+                <div class="fc-title">{{ t('landing.mock.liveTitle') }}</div>
+                <div class="fc-sub">{{ t('landing.mock.liveSub') }}</div>
               </div>
             </div>
           </div>
@@ -157,20 +157,19 @@ interface Step {
       <section id="features" class="section">
         <div class="section-inner">
           <div class="section-head">
-            <span class="eyebrow">Todo lo que podés hacer</span>
-            <h2 class="section-title">Un viaje tiene mil detalles.<br />Acá entran todos.</h2>
-            <p class="section-sub">
-              Desde la primera idea hasta el último gasto, TripSync mantiene a todo el grupo
-              mirando la misma página.
-            </p>
+            <span class="eyebrow">{{ t('landing.features.eyebrow') }}</span>
+            <h2 class="section-title">
+              {{ t('landing.features.titleLine1') }}<br />{{ t('landing.features.titleLine2') }}
+            </h2>
+            <p class="section-sub">{{ t('landing.features.sub') }}</p>
           </div>
 
           <div class="grid">
-            @for (feature of features; track feature.title) {
+            @for (feature of features; track feature.titleKey) {
               <article class="card">
                 <span class="card-icon">{{ feature.icon }}</span>
-                <h3 class="card-title">{{ feature.title }}</h3>
-                <p class="card-text">{{ feature.text }}</p>
+                <h3 class="card-title">{{ t(feature.titleKey) }}</h3>
+                <p class="card-text">{{ t(feature.textKey) }}</p>
               </article>
             }
           </div>
@@ -181,16 +180,16 @@ interface Step {
       <section id="como-funciona" class="section section-alt">
         <div class="section-inner">
           <div class="section-head">
-            <span class="eyebrow">Cómo funciona</span>
-            <h2 class="section-title">De la idea al itinerario en tres pasos</h2>
+            <span class="eyebrow">{{ t('landing.steps.eyebrow') }}</span>
+            <h2 class="section-title">{{ t('landing.steps.title') }}</h2>
           </div>
 
           <div class="steps">
             @for (step of steps; track step.number) {
               <div class="step">
                 <span class="step-num">{{ step.number }}</span>
-                <h3 class="card-title">{{ step.title }}</h3>
-                <p class="card-text">{{ step.text }}</p>
+                <h3 class="card-title">{{ t(step.titleKey) }}</h3>
+                <p class="card-text">{{ t(step.textKey) }}</p>
               </div>
             }
           </div>
@@ -200,14 +199,12 @@ interface Step {
       <!-- CTA final -->
       <section class="cta">
         <div class="cta-inner">
-          <h2 class="cta-title">¿Listos para el próximo viaje?</h2>
-          <p class="cta-sub">
-            Creá tu cuenta y armá el primer itinerario en minutos. Invitá a tu grupo cuando quieras.
-          </p>
+          <h2 class="cta-title">{{ t('landing.cta.title') }}</h2>
+          <p class="cta-sub">{{ t('landing.cta.sub') }}</p>
           @if (isAuthenticated()) {
-            <a routerLink="/trips" class="btn btn-invert btn-lg">Ir a mis viajes</a>
+            <a routerLink="/trips" class="btn btn-invert btn-lg">{{ t('nav.goToTrips') }}</a>
           } @else {
-            <a routerLink="/register" class="btn btn-invert btn-lg">Crear mi cuenta gratis</a>
+            <a routerLink="/register" class="btn btn-invert btn-lg">{{ t('landing.cta.button') }}</a>
           }
         </div>
       </section>
@@ -223,7 +220,7 @@ interface Step {
             </svg>
             <span class="logo-text footer-logo-text">TripSync</span>
           </a>
-          <span class="footer-note">Planificá viajes en equipo, sin caos.</span>
+          <span class="footer-note">{{ t('landing.footer.note') }}</span>
         </div>
       </footer>
     </div>
@@ -250,7 +247,7 @@ interface Step {
       .nav-links { display: flex; align-items: center; gap: 4px; }
       .nav-link { font-size: 14px; font-weight: 500; color: #64748b; padding: 7px 14px; border-radius: 8px; }
       .nav-link:hover { color: #0f172a; background: #f1f5f9; }
-      .nav-actions { display: flex; align-items: center; gap: 8px; }
+      .nav-actions { display: flex; align-items: center; gap: 10px; }
 
       /* Botones */
       .btn {
@@ -429,6 +426,11 @@ interface Step {
         .nav-links { display: none; }
       }
       @media (max-width: 640px) {
+        /* Deja sitio al selector de idioma en pantallas chicas */
+        .nav-inner { padding: 0 16px; gap: 8px; }
+        .nav-actions { gap: 6px; }
+        .nav-actions .nav-link { padding: 7px 8px; }
+        .btn-sm { padding: 8px 14px; }
         .hero { padding: 56px 20px 72px; }
         .hero-title { font-size: 34px; letter-spacing: -0.9px; }
         .section { padding: 64px 20px; }
@@ -447,56 +449,21 @@ interface Step {
 export class LandingPage {
   private readonly auth = inject(AuthService);
 
+  protected readonly t = inject(I18nService).t;
   protected readonly isAuthenticated = this.auth.isAuthenticated;
 
   protected readonly features: Feature[] = [
-    {
-      icon: '🗓️',
-      title: 'Itinerario día por día',
-      text: 'Creá un día por cada fecha del viaje y sumá actividades con descripción, ubicación y enlaces. Arrastrá para reordenar y marcá lo que ya está hecho.',
-    },
-    {
-      icon: '🗺️',
-      title: 'Mapa interactivo',
-      text: 'Buscá lugares por nombre y quedan geolocalizados. Todas las actividades del viaje se ven juntas en el mapa para entender cómo se conecta cada día.',
-    },
-    {
-      icon: '⚡',
-      title: 'Sincronizado en tiempo real',
-      text: 'Si alguien agrega, edita o reordena una actividad, el resto lo ve al instante. Sin recargar y sin versiones distintas del mismo plan.',
-    },
-    {
-      icon: '💸',
-      title: 'Gastos compartidos',
-      text: 'Poné precio a cada actividad y elegí cómo se reparte: en partes iguales, entre personas concretas o por persona. TripSync calcula cuánto paga cada uno.',
-    },
-    {
-      icon: '👥',
-      title: 'Invitá a tu grupo',
-      text: 'Sumá gente por email con permisos de edición o de solo lectura. Si todavía no tiene cuenta, queda invitada y entra al viaje al registrarse.',
-    },
-    {
-      icon: '🎨',
-      title: 'Cada viaje, con su cara',
-      text: 'Ponele una portada y elegí la tipografía del viaje. Una escapada de fin de semana y una vuelta al mundo no tienen por qué verse igual.',
-    },
+    { icon: '🗓️', titleKey: 'landing.feature1.title', textKey: 'landing.feature1.text' },
+    { icon: '🗺️', titleKey: 'landing.feature2.title', textKey: 'landing.feature2.text' },
+    { icon: '⚡', titleKey: 'landing.feature3.title', textKey: 'landing.feature3.text' },
+    { icon: '💸', titleKey: 'landing.feature4.title', textKey: 'landing.feature4.text' },
+    { icon: '👥', titleKey: 'landing.feature5.title', textKey: 'landing.feature5.text' },
+    { icon: '🎨', titleKey: 'landing.feature6.title', textKey: 'landing.feature6.text' },
   ];
 
   protected readonly steps: Step[] = [
-    {
-      number: '1',
-      title: 'Creá el viaje',
-      text: 'Ponele nombre y fechas. TripSync arma la estructura de días lista para completar.',
-    },
-    {
-      number: '2',
-      title: 'Sumá lugares y actividades',
-      text: 'Buscá cada lugar, agregalo al día que corresponde y ordenalo como quieras.',
-    },
-    {
-      number: '3',
-      title: 'Invitá y repartí gastos',
-      text: 'Sumá a tu grupo, planifiquen juntos en tiempo real y mirá cuánto pone cada uno.',
-    },
+    { number: '1', titleKey: 'landing.step1.title', textKey: 'landing.step1.text' },
+    { number: '2', titleKey: 'landing.step2.title', textKey: 'landing.step2.text' },
+    { number: '3', titleKey: 'landing.step3.title', textKey: 'landing.step3.text' },
   ];
 }

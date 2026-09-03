@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { LanguageSwitchComponent } from '../../shared/language-switch.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LanguageSwitchComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-[100dvh] flex flex-col">
@@ -34,12 +36,15 @@ import { ProfileService } from '../../core/services/profile.service';
               class="nav-link"
               style="font-size: 14px; font-weight: 500; color: #64748b; cursor: pointer; padding: 6px 14px; border-radius: 8px; text-decoration: none; transition: color 0.15s;"
             >
-              Mis viajes
+              {{ t('nav.myTrips') }}
             </a>
           </nav>
 
-          <!-- Right: avatar button + dropdown -->
-          <div style="position:relative;">
+          <!-- Right: language switch + avatar button + dropdown -->
+          <div style="display:flex; align-items:center; gap:12px;">
+            <app-language-switch />
+
+            <div style="position:relative;">
 
             <!-- Avatar button -->
             <button
@@ -89,7 +94,7 @@ import { ProfileService } from '../../core/services/profile.service';
                     <p style="margin:0; font-size:13px; font-weight:600; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                       {{ email() }}
                     </p>
-                    <p style="margin:2px 0 0; font-size:12px; color:#94a3b8;">Tu cuenta</p>
+                    <p style="margin:2px 0 0; font-size:12px; color:#94a3b8;">{{ t('shell.yourAccount') }}</p>
                   </div>
                 </div>
 
@@ -112,9 +117,9 @@ import { ProfileService } from '../../core/services/profile.service';
                     </span>
                     <div>
                       <p style="margin:0; font-size:14px; font-weight:500; color:#0f172a;">
-                        {{ uploadingAvatar() ? 'Subiendo...' : 'Cambiar foto de perfil' }}
+                        {{ uploadingAvatar() ? t('shell.uploading') : t('shell.changeAvatar') }}
                       </p>
-                      <p style="margin:0; font-size:12px; color:#94a3b8;">JPG, PNG o GIF</p>
+                      <p style="margin:0; font-size:12px; color:#94a3b8;">{{ t('shell.avatarFormats') }}</p>
                     </div>
                   </button>
 
@@ -133,11 +138,12 @@ import { ProfileService } from '../../core/services/profile.service';
                         <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                       </svg>
                     </span>
-                    <p style="margin:0; font-size:14px; font-weight:500; color:#ef4444;">Cerrar sesión</p>
+                    <p style="margin:0; font-size:14px; font-weight:500; color:#ef4444;">{{ t('shell.logout') }}</p>
                   </button>
                 </div>
               </div>
             }
+            </div>
           </div>
         </div>
       </header>
@@ -157,6 +163,7 @@ export class ShellComponent {
   private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
 
+  protected readonly t = inject(I18nService).t;
   protected readonly email = computed(() => this.auth.user()?.email ?? '');
   protected readonly avatarUrl = signal<string | null>(null);
   protected readonly showProfileMenu = signal(false);

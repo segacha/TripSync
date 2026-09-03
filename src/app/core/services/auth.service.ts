@@ -2,6 +2,11 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import type { Session, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 
+export type SignUpOutcome =
+  | { status: 'signed_in' }
+  | { status: 'confirmation_sent' }
+  | { status: 'already_registered' };
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly supabase = inject(SupabaseService).client;
@@ -25,10 +30,26 @@ export class AuthService {
     });
   }
 
-  async signUp(email: string, password: string) {
+  /**
+   * Cuando el email ya tiene cuenta, Supabase NO devuelve error ni manda mail:
+   * responde 200 con un usuario ofuscado (sin identities) para evitar que se
+   * pueda enumerar usuarios. Hay que detectarlo o el alta parece exitosa.
+   */
+  async signUp(email: string, password: string): Promise<SignUpOutcome> {
     const { data, error } = await this.supabase.auth.signUp({ email, password });
     if (error) throw error;
-    return data;
+
+    if (data.session) return { status: 'signed_in' };
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      return { status: 'already_registered' };
+    }
+    return { status: 'confirmation_sent' };
+  }
+
+  /** Reenvía el mail de confirmación de un alta pendiente. */
+  async resendSignUpConfirmation(email: string) {
+    const { error } = await this.supabase.auth.resend({ type: 'signup', email });
+    if (error) throw error;
   }
 
   async signIn(email: string, password: string) {

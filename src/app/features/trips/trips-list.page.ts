@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { Trip } from '../../core/models/trip.model';
 import { TripsService } from '../../core/services/trips.service';
 
@@ -16,8 +17,8 @@ import { TripsService } from '../../core/services/trips.service';
       <!-- Page header -->
       <div style="max-width:1100px; margin:0 auto; padding:0 24px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         <div>
-          <h1 style="font-size:30px; font-weight:700; color:#0f172a; margin:0 0 4px; letter-spacing:-0.5px;">Mis viajes</h1>
-          <p style="color:#64748b; font-size:15px; margin:0;">Organizá y planificá tus próximas aventuras</p>
+          <h1 style="font-size:30px; font-weight:700; color:#0f172a; margin:0 0 4px; letter-spacing:-0.5px;">{{ t('trips.title') }}</h1>
+          <p style="color:#64748b; font-size:15px; margin:0;">{{ t('trips.subtitle') }}</p>
         </div>
         <button
           type="button"
@@ -26,7 +27,7 @@ import { TripsService } from '../../core/services/trips.service';
           onmouseenter="this.style.background='#ea580c'" onmouseleave="this.style.background='#f97316'"
         >
           <span style="font-size:18px; line-height:1;">+</span>
-          Nuevo viaje
+          {{ t('trips.new') }}
         </button>
       </div>
 
@@ -46,24 +47,24 @@ import { TripsService } from '../../core/services/trips.service';
         [style.margin-bottom]="showForm() ? '28px' : '0'">
         <form [formGroup]="form" (ngSubmit)="create()"
           style="background:white; border:1.5px solid #e2e8f0; border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:16px;">
-          <h3 style="font-size:16px; font-weight:600; color:#0f172a; margin:0;">Nuevo viaje</h3>
+          <h3 style="font-size:16px; font-weight:600; color:#0f172a; margin:0;">{{ t('trips.new') }}</h3>
           <div style="display:flex; gap:14px; flex-wrap:wrap;">
             <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:5px;">
-              <label style="font-size:13px; font-weight:500; color:#374151;">Título del viaje *</label>
+              <label style="font-size:13px; font-weight:500; color:#374151;">{{ t('trips.form.titleLabel') }}</label>
               <input
                 type="text"
                 formControlName="title"
-                placeholder="Ej: Europa 2025"
+                [placeholder]="t('trips.form.titlePlaceholder')"
                 class="trip-input"
                 style="padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
               />
             </div>
             <div style="flex:2; min-width:180px; display:flex; flex-direction:column; gap:5px;">
-              <label style="font-size:13px; font-weight:500; color:#374151;">Descripción (opcional)</label>
+              <label style="font-size:13px; font-weight:500; color:#374151;">{{ t('trips.form.descriptionLabel') }}</label>
               <input
                 type="text"
                 formControlName="description"
-                placeholder="Añadí una breve descripción..."
+                [placeholder]="t('trips.form.descriptionPlaceholder')"
                 class="trip-input"
                 style="padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; font-family:'Outfit',sans-serif; color:#0f172a; background:white;"
               />
@@ -80,14 +81,14 @@ import { TripsService } from '../../core/services/trips.service';
               [style.background]="form.invalid || saving() ? '#fdba74' : '#f97316'"
               [style.cursor]="form.invalid || saving() ? 'not-allowed' : 'pointer'"
             >
-              {{ saving() ? 'Creando...' : 'Crear viaje' }}
+              {{ saving() ? t('trips.form.submitting') : t('trips.form.submit') }}
             </button>
             <button
               type="button"
               (click)="toggleForm()"
               style="padding:10px 20px; background:transparent; color:#64748b; border:1.5px solid #e2e8f0; border-radius:50px; font-size:14px; font-weight:500; cursor:pointer; font-family:'Outfit',sans-serif;"
             >
-              Cancelar
+              {{ t('common.cancel') }}
             </button>
           </div>
         </form>
@@ -114,9 +115,9 @@ import { TripsService } from '../../core/services/trips.service';
           <!-- Empty state -->
           <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px; text-align:center;">
             <div class="float-soft" style="font-size:56px; margin-bottom:20px;">🗺️</div>
-            <h3 style="font-size:22px; font-weight:700; color:#0f172a; margin:0 0 8px;">¡Aún no tenés viajes!</h3>
+            <h3 style="font-size:22px; font-weight:700; color:#0f172a; margin:0 0 8px;">{{ t('trips.empty.title') }}</h3>
             <p style="font-size:15px; color:#64748b; margin:0 0 28px; max-width:360px; line-height:1.6;">
-              Creá tu primer viaje y empezá a planificar tu aventura
+              {{ t('trips.empty.text') }}
             </p>
             <button
               type="button"
@@ -124,7 +125,7 @@ import { TripsService } from '../../core/services/trips.service';
               style="padding:10px 20px; background:#f97316; color:white; border:none; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; transition:background 0.15s;"
               onmouseenter="this.style.background='#ea580c'" onmouseleave="this.style.background='#f97316'"
             >
-              + Crear mi primer viaje
+              {{ t('trips.empty.cta') }}
             </button>
           </div>
 
@@ -141,7 +142,7 @@ import { TripsService } from '../../core/services/trips.service';
                 <!-- Badge -->
                 <div style="display:inline-flex; align-items:center; gap:6px; background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; border-radius:50px; padding:3px 10px; font-size:12px; font-weight:600; width:fit-content;">
                   <span class="pulse-soft" style="width:7px; height:7px; background:#f97316; border-radius:50%; display:inline-block; flex-shrink:0;"></span>
-                  Viaje
+                  {{ t('trips.card.badge') }}
                 </div>
 
                 <h3 style="font-size:20px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.3px;">{{ trip.title }}</h3>
@@ -152,7 +153,9 @@ import { TripsService } from '../../core/services/trips.service';
                   </p>
                 }
 
-                <p style="font-size:12px; color:#94a3b8; margin:0;">{{ trip.created_at | date: 'mediumDate' }}</p>
+                <p style="font-size:12px; color:#94a3b8; margin:0;">
+                  {{ trip.created_at | date: 'mediumDate' : undefined : dateLocale() }}
+                </p>
 
                 <!-- Footer -->
                 <div style="margin-top:8px; border-top:1px solid #f1f5f9; padding-top:12px;">
@@ -163,7 +166,7 @@ import { TripsService } from '../../core/services/trips.service';
                     onmouseenter="this.style.color='#ea580c'; this.querySelector('.open-arrow').style.transform='translateX(4px)';"
                     onmouseleave="this.style.color='#f97316'; this.querySelector('.open-arrow').style.transform='translateX(0)';"
                   >
-                    Abrir
+                    {{ t('trips.card.open') }}
                     <span class="open-arrow" style="display:inline-block; transition:transform 0.2s;">→</span>
                   </a>
                 </div>
@@ -185,7 +188,10 @@ export class TripsListPage {
   private readonly tripsService = inject(TripsService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
+  protected readonly t = this.i18n.t;
+  protected readonly dateLocale = this.i18n.dateLocale;
   protected readonly trips = signal<Trip[]>([]);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
@@ -223,11 +229,11 @@ export class TripsListPage {
       });
       this.showForm.set(false);
       this.form.reset({ title: '', description: '' });
-      this.successMessage.set('¡Viaje creado exitosamente!');
+      this.successMessage.set(this.t('trips.created'));
       setTimeout(() => this.successMessage.set(null), 3000);
       await this.router.navigate(['/trips', trip.id]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.saving.set(false);
     }
@@ -238,7 +244,7 @@ export class TripsListPage {
     try {
       this.trips.set(await this.tripsService.listMine());
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.errorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.loading.set(false);
     }

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { Trip } from '../../core/models/trip.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -48,10 +49,10 @@ import { CostSummaryComponent } from './cost-summary.component';
           </div>
         </div>
 
-      } @else if (store.trip(); as t) {
+      } @else if (store.trip(); as trip) {
 
         <!-- Hero -->
-        <div [style.background]="heroBackground(t)"
+        <div [style.background]="heroBackground(trip)"
           style="padding:36px 0 40px; position:relative; background-size:cover; background-position:center;">
           <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
 
@@ -63,7 +64,7 @@ import { CostSummaryComponent } from './cost-summary.component';
                 onmouseenter="this.style.background='rgba(255,255,255,0.25)'"
                 onmouseleave="this.style.background='rgba(255,255,255,0.15)'"
               >
-                ← Mis viajes
+                {{ t('trip.back') }}
               </button>
 
               @if (isOwner()) {
@@ -82,7 +83,13 @@ import { CostSummaryComponent } from './cost-summary.component';
                       <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                       <polyline points="21 15 16 10 5 21"/>
                     </svg>
-                    {{ savingMeta() ? 'Subiendo...' : (t.cover_url ? 'Cambiar portada' : 'Añadir portada') }}
+                    {{
+                      savingMeta()
+                        ? t('trip.cover.uploading')
+                        : trip.cover_url
+                          ? t('trip.cover.change')
+                          : t('trip.cover.add')
+                    }}
                   </button>
 
                   <!-- Edit dates toggle -->
@@ -96,37 +103,37 @@ import { CostSummaryComponent } from './cost-summary.component';
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    {{ editingDates() ? 'Cancelar' : 'Editar fechas' }}
+                    {{ editingDates() ? t('common.cancel') : t('trip.dates.edit') }}
                   </button>
                 </div>
               }
             </div>
 
-            <h1 style="font-size:36px; font-weight:800; color:white; margin:0 0 8px; letter-spacing:-0.7px;">{{ t.title }}</h1>
+            <h1 style="font-size:36px; font-weight:800; color:white; margin:0 0 8px; letter-spacing:-0.7px;">{{ trip.title }}</h1>
 
-            @if (t.description) {
-              <p style="font-size:16px; color:rgba(255,255,255,0.85); margin:0 0 16px; max-width:600px; line-height:1.5;">{{ t.description }}</p>
+            @if (trip.description) {
+              <p style="font-size:16px; color:rgba(255,255,255,0.85); margin:0 0 16px; max-width:600px; line-height:1.5;">{{ trip.description }}</p>
             }
 
             <!-- Date edit form (owner only) -->
             @if (editingDates()) {
               <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:16px 20px; margin-bottom:16px; display:flex; flex-direction:column; gap:10px; max-width:480px; backdrop-filter:blur(8px);">
-                <p style="margin:0; font-size:13px; font-weight:600; color:white;">Fechas del viaje</p>
+                <p style="margin:0; font-size:13px; font-weight:600; color:white;">{{ t('trip.dates.title') }}</p>
                 <div [formGroup]="dateForm" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                   <input type="date" formControlName="start_date"
                     style="padding:7px 10px; border:1.5px solid rgba(255,255,255,0.3); border-radius:8px; font-size:13px; color:white; background:rgba(255,255,255,0.15); outline:none; font-family:'Outfit',sans-serif; cursor:pointer;"
-                    placeholder="Inicio" />
+                    [attr.aria-label]="t('trip.dates.title')" />
                   <span style="color:rgba(255,255,255,0.6); font-size:13px;">→</span>
                   <input type="date" formControlName="end_date"
                     style="padding:7px 10px; border:1.5px solid rgba(255,255,255,0.3); border-radius:8px; font-size:13px; color:white; background:rgba(255,255,255,0.15); outline:none; font-family:'Outfit',sans-serif; cursor:pointer;"
-                    placeholder="Fin" />
+                    [attr.aria-label]="t('trip.dates.title')" />
                   <button
                     type="button"
                     (click)="saveDates()"
                     [disabled]="savingMeta()"
                     style="padding:7px 16px; background:white; color:#f97316; border:none; border-radius:50px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; transition:opacity 0.15s;"
                   >
-                    {{ savingMeta() ? '...' : 'Guardar' }}
+                    {{ savingMeta() ? '...' : t('common.save') }}
                   </button>
                 </div>
                 @if (metaError()) {
@@ -137,27 +144,27 @@ import { CostSummaryComponent } from './cost-summary.component';
 
             <!-- Meta badges -->
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
-              @if (t.start_date || t.end_date) {
+              @if (trip.start_date || trip.end_date) {
                 <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:50px; padding:5px 12px; color:white; font-size:13px; font-weight:500;">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  @if (t.start_date) { {{ t.start_date | date:'mediumDate' }} }
-                  @if (t.start_date && t.end_date) { → }
-                  @if (t.end_date) { {{ t.end_date | date:'mediumDate' }} }
+                  @if (trip.start_date) { {{ trip.start_date | date:'mediumDate' : undefined : dateLocale() }} }
+                  @if (trip.start_date && trip.end_date) { → }
+                  @if (trip.end_date) { {{ trip.end_date | date:'mediumDate' : undefined : dateLocale() }} }
                 </span>
               }
               <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:50px; padding:5px 12px; color:white; font-size:13px; font-weight:500;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 12h18M3 6h18M3 18h18"/>
                 </svg>
-                {{ store.days().length }} día{{ store.days().length !== 1 ? 's' : '' }}
+                {{ tp('common.days', store.days().length) }}
               </span>
               <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:50px; padding:5px 12px; color:white; font-size:13px; font-weight:500;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
-                {{ totalActivities() }} actividad{{ totalActivities() !== 1 ? 'es' : '' }}
+                {{ tp('common.activities', totalActivities()) }}
               </span>
             </div>
           </div>
@@ -172,8 +179,8 @@ import { CostSummaryComponent } from './cost-summary.component';
             <!-- Section header -->
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
               <div>
-                <h2 style="font-size:22px; font-weight:700; color:#0f172a; margin:0 0 4px; letter-spacing:-0.3px;">Itinerario</h2>
-                <p style="font-size:14px; color:#94a3b8; margin:0;">Organizá tus actividades día a día</p>
+                <h2 style="font-size:22px; font-weight:700; color:#0f172a; margin:0 0 4px; letter-spacing:-0.3px;">{{ t('trip.itinerary.title') }}</h2>
+                <p style="font-size:14px; color:#94a3b8; margin:0;">{{ t('trip.itinerary.subtitle') }}</p>
               </div>
               <button
                 type="button"
@@ -181,7 +188,7 @@ import { CostSummaryComponent } from './cost-summary.component';
                 style="padding:9px 18px; background:#f97316; color:white; border:none; border-radius:50px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; white-space:nowrap; flex-shrink:0; transition:background 0.15s;"
                 onmouseenter="this.style.background='#ea580c'" onmouseleave="this.style.background='#f97316'"
               >
-                @if (showAddDay()) { Cancelar } @else { + Añadir día }
+                @if (showAddDay()) { {{ t('common.cancel') }} } @else { {{ t('trip.addDay') }} }
               </button>
             </div>
 
@@ -192,7 +199,7 @@ import { CostSummaryComponent } from './cost-summary.component';
                 (ngSubmit)="addDay()"
                 style="background:white; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; gap:10px;"
               >
-                <label style="font-size:13px; font-weight:500; color:#374151;">Fecha del día</label>
+                <label style="font-size:13px; font-weight:500; color:#374151;">{{ t('trip.addDay.label') }}</label>
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                   <input
                     type="date"
@@ -207,14 +214,14 @@ import { CostSummaryComponent } from './cost-summary.component';
                     [style.background]="dayForm.invalid || addingDay() ? '#fdba74' : '#f97316'"
                     onmouseenter="if(!this.disabled) this.style.background='#ea580c'" onmouseleave="if(!this.disabled) this.style.background='#f97316'"
                   >
-                    {{ addingDay() ? 'Guardando...' : 'Añadir' }}
+                    {{ addingDay() ? t('common.saving') : t('common.add') }}
                   </button>
                   <button
                     type="button"
                     (click)="toggleAddDay()"
                     style="padding:9px 16px; background:transparent; border:1px solid #e2e8f0; border-radius:50px; color:#64748b; font-size:13px; cursor:pointer; font-family:'Outfit',sans-serif;"
                   >
-                    Cancelar
+                    {{ t('common.cancel') }}
                   </button>
                 </div>
                 @if (dayErrorMessage()) {
@@ -225,12 +232,12 @@ import { CostSummaryComponent } from './cost-summary.component';
 
             <!-- Days list -->
             @if (store.loading()) {
-              <p style="font-size:14px; color:#94a3b8;">Cargando itinerario...</p>
+              <p style="font-size:14px; color:#94a3b8;">{{ t('trip.itinerary.loading') }}</p>
             } @else if (store.days().length === 0) {
               <div style="background:white; border:1.5px solid #e2e8f0; border-radius:18px; padding:48px 24px; text-align:center;">
                 <div class="float-soft" style="font-size:36px; margin-bottom:12px;">📅</div>
                 <p style="color:#94a3b8; font-size:14px; margin:0; font-family:'Outfit',sans-serif;">
-                  No hay días en el itinerario aún.<br/>Añadí el primer día para empezar.
+                  {{ t('trip.days.empty1') }}<br/>{{ t('trip.days.empty2') }}
                 </p>
               </div>
             } @else {
@@ -249,7 +256,7 @@ import { CostSummaryComponent } from './cost-summary.component';
           <!-- Right: Map + Members + Costs (sticky) -->
           <div style="display:flex; flex-direction:column; gap:20px; position:sticky; top:76px; align-self:start;">
             <app-trip-map />
-            <app-members-panel [trip]="t" />
+            <app-members-panel [trip]="trip" />
             <app-cost-summary
               [activities]="getAllActivities()"
               [tripMembers]="getTripmembers()"
@@ -260,7 +267,7 @@ import { CostSummaryComponent } from './cost-summary.component';
 
       } @else {
         <div style="max-width:1200px; margin:0 auto; padding:32px 24px;">
-          <p style="font-size:14px; color:#94a3b8;">Viaje no encontrado.</p>
+          <p style="font-size:14px; color:#94a3b8;">{{ t('trip.notFound') }}</p>
         </div>
       }
     </div>
@@ -287,7 +294,12 @@ export class TripDetailPage {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly i18n = inject(I18nService);
   protected readonly store = inject(ItineraryStore);
+
+  protected readonly t = this.i18n.t;
+  protected readonly tp = this.i18n.tp;
+  protected readonly dateLocale = this.i18n.dateLocale;
 
   protected readonly dayColors = DAY_COLORS;
   protected readonly showAddDay = signal(false);
@@ -321,9 +333,9 @@ export class TripDetailPage {
     queueMicrotask(() => this.store.load(this.id()));
   }
 
-  protected heroBackground(t: Trip): string {
-    if (t.cover_url) {
-      return `linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.65)), url('${t.cover_url}') center/cover no-repeat`;
+  protected heroBackground(trip: Trip): string {
+    if (trip.cover_url) {
+      return `linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.65)), url('${trip.cover_url}') center/cover no-repeat`;
     }
     return 'linear-gradient(135deg,#f97316 0%,#dc2626 100%)';
   }
@@ -350,7 +362,7 @@ export class TripDetailPage {
       this.dayForm.reset({ day_date: '' });
       this.showAddDay.set(false);
     } catch (err) {
-      this.dayErrorMessage.set(err instanceof Error ? err.message : 'Error desconocido');
+      this.dayErrorMessage.set(err instanceof Error ? err.message : this.t('common.unknownError'));
     } finally {
       this.addingDay.set(false);
     }
@@ -368,7 +380,7 @@ export class TripDetailPage {
       });
       this.editingDates.set(false);
     } catch (err) {
-      this.metaError.set(err instanceof Error ? err.message : 'Error guardando fechas');
+      this.metaError.set(err instanceof Error ? err.message : this.t('trip.dates.error'));
     } finally {
       this.savingMeta.set(false);
     }
@@ -383,7 +395,7 @@ export class TripDetailPage {
       const url = await this.profileService.uploadTripCover(this.id(), file);
       await this.store.updateTrip({ cover_url: url });
     } catch (err) {
-      this.metaError.set(err instanceof Error ? err.message : 'Error subiendo imagen');
+      this.metaError.set(err instanceof Error ? err.message : this.t('trip.cover.error'));
     } finally {
       this.savingMeta.set(false);
       (event.target as HTMLInputElement).value = '';
